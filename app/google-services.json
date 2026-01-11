@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "654077651470",
+    "project_id": "foodallergen-app",
+    "storage_bucket": "foodallergen-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:654077651470:android:b7256729541bc517232a5f",
+        "android_client_info": {
+          "package_name": "edu.utem.ftmk.foodallergen"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCJm14szmSp4Z7e1fhIBR1N3swBQn3EcCE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
