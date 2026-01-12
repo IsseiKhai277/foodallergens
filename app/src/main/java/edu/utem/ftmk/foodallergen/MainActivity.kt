@@ -679,7 +679,32 @@ Allergens:"""
             .map { it.trim() }
             .filter { it.isNotEmpty() && it != "empty" }
             .toSet()
-    }    
+    }
+    
+    /**
+     * Calculate per-sample Macro F1: Average of per-allergen F1 scores
+     * For each of the 9 allergens, calculate binary F1 and average them
+     */
+    private fun calculatePerSampleMacroF1(actualSet: Set<String>, predictedSet: Set<String>): Double {
+        val f1Scores = allowedAllergens.map { allergen ->
+            val inActual = allergen in actualSet
+            val inPred = allergen in predictedSet
+            
+            // Binary confusion matrix for this allergen on this sample
+            val tp = if (inActual && inPred) 1 else 0
+            val fp = if (!inActual && inPred) 1 else 0
+            val fn = if (inActual && !inPred) 1 else 0
+            
+            // F1 for this allergen: 2TP / (2TP + FP + FN)
+            if (2 * tp + fp + fn > 0) {
+                (2.0 * tp) / (2.0 * tp + fp + fn)
+            } else {
+                0.0  // No positive cases for this allergen
+            }
+        }
+        return f1Scores.average()
+    }
+    
     /**
      * Calculate Prediction Quality Metrics (Table 2)
      * Computes TP, FP, FN, TN, Precision, Recall, F1, EMR, Hamming Loss, FNR
@@ -708,10 +733,9 @@ Allergens:"""
             (2.0 * tp) / (2.0 * tp + fp + fn)
         } else 0.0
         
-        // Macro F1 (simplified as single-instance average)
-        val macroF1 = if (precision + recall > 0) {
-            2 * (precision * recall) / (precision + recall)
-        } else 0.0
+        // Macro F1: Average of per-allergen F1 scores
+        // For single-sample, calculate F1 for each of the 9 allergens
+        val macroF1 = calculatePerSampleMacroF1(actualSet, predictedSet)
         
         // Exact Match Ratio (per sample)
         val isExactMatch = actualSet == predictedSet
@@ -737,6 +761,28 @@ Allergens:"""
         )
     }
     
+    // Allergen keyword mapping for hallucination detection
+    private val allergenKeywords = mapOf(
+        "milk" to listOf("milk", "cream", "butter", "cheese", "whey", "casein", "lactose", "dairy", "yogurt", "ghee", "curd", "buttermilk"),
+        "egg" to listOf("egg", "albumin", "mayonnaise", "meringue", "ovum", "lysozyme", "ovalbumin"),
+        "peanut" to listOf("peanut", "groundnut", "arachis", "monkey nut"),
+        "tree nut" to listOf("almond", "walnut", "cashew", "pecan", "pistachio", "hazelnut", "macadamia", "brazil nut", "chestnut", "nut", "praline", "marzipan", "nougat"),
+        "wheat" to listOf("wheat", "flour", "gluten", "semolina", "durum", "spelt", "bulgur", "couscous", "bread", "pasta", "noodle", "cereal", "bran", "starch"),
+        "soy" to listOf("soy", "soya", "tofu", "edamame", "miso", "tempeh", "lecithin"),
+        "fish" to listOf("fish", "anchovy", "sardine", "tuna", "salmon", "cod", "bass", "mackerel", "tilapia", "trout", "herring", "haddock"),
+        "shellfish" to listOf("shrimp", "prawn", "crab", "lobster", "crayfish", "oyster", "mussel", "clam", "scallop", "crustacean", "mollusk", "squid", "octopus"),
+        "sesame" to listOf("sesame", "tahini", "halvah", "hummus")
+    )
+    
+    /**
+     * Check if allergen keywords exist in ingredients
+     */
+    private fun isAllergenInIngredients(allergen: String, ingredients: String): Boolean {
+        val keywords = allergenKeywords[allergen.lowercase()] ?: return false
+        val ingredientsLower = ingredients.lowercase()
+        return keywords.any { ingredientsLower.contains(it) }
+    }
+    
     /**
      * Calculate Safety-Oriented Metrics (Table 3)
      * Detects hallucinations, over-predictions, and abstention accuracy
@@ -749,11 +795,15 @@ Allergens:"""
         val actualSet = normalizeAllergenString(groundTruth)
         val predictedSet = normalizeAllergenString(predicted)
         
-        // Check for hallucinations (allergens not supported by ingredients)
-        // For simplicity, we check if predicted allergens are in ground truth
-        // A true hallucination detector would parse ingredients
-        val hasHallucination = predictedSet.any { it !in actualSet && it !in allowedAllergens }
-        val hallucinatedAllergens = predictedSet.filter { it !in actualSet }.toList()
+        // Check for hallucinations: predicted allergen not derivable from ingredients
+        // An allergen is a hallucination if it's predicted but not in ground truth
+        // AND there are no ingredient keywords that could justify the prediction
+        val hasHallucination = predictedSet.any { allergen ->
+            allergen !in actualSet && !isAllergenInIngredients(allergen, ingredients)
+        }
+        val hallucinatedAllergens = predictedSet.filter { allergen ->
+            allergen !in actualSet && !isAllergenInIngredients(allergen, ingredients)
+        }.toList()
         
         // Over-prediction: Predicted allergens beyond ground truth
         val overPredicted = predictedSet.subtract(actualSet).toList()
@@ -790,6 +840,7 @@ Allergens:"""
         var exactMatches = 0
         var sumPrecision = 0.0
         var sumRecall = 0.0
+        var sumMacroF1 = 0.0
         var sumHammingLoss = 0.0
         
         foods.forEach { food ->
@@ -801,6 +852,7 @@ Allergens:"""
                 if (qm.isExactMatch) exactMatches++
                 sumPrecision += qm.precision
                 sumRecall += qm.recall
+                sumMacroF1 += qm.f1ScoreMacro
                 sumHammingLoss += qm.hammingLoss
             }
         }
@@ -809,15 +861,13 @@ Allergens:"""
         val avgPrecision = sumPrecision / n
         val avgRecall = sumRecall / n
         
-        // Micro F1: Aggregate all TP, FP, FN first
+        // Micro F1: Aggregate all TP, FP, FN first, then compute F1
         val microF1 = if (2 * totalTP + totalFP + totalFN > 0) {
             (2.0 * totalTP) / (2.0 * totalTP + totalFP + totalFN)
         } else 0.0
         
-        // Macro F1: Average of individual F1 scores
-        val macroF1 = if (avgPrecision + avgRecall > 0) {
-            2 * (avgPrecision * avgRecall) / (avgPrecision + avgRecall)
-        } else 0.0
+        // Macro F1: Average of per-sample F1-Macro scores
+        val macroF1 = sumMacroF1 / n
         
         // Exact Match Ratio (EMR): Percentage of exact matches
         val emr = (exactMatches.toDouble() / n) * 100.0

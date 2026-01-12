@@ -80,18 +80,19 @@ object ExcelExporter {
             setFont(font)
         }
         
-        // Create header row
+        // Create header row - Following project requirements for prediction records
         val headerRow = sheet.createRow(0)
         val headers = listOf(
-            "ID", "Food Name", "Ingredients", "Ground Truth", "Predicted Allergens",
-            // Quality Metrics
-            "TP", "FP", "FN", "TN", "Precision", "Recall", "F1(Micro)", "F1(Macro)",
-            "Exact Match", "Hamming Loss", "FNR",
-            // Safety Metrics
-            "Missed Allergens", "Over-Predicted", "Hallucinated", "Correct Abstention",
-            // Efficiency Metrics
-            "Latency(ms)", "TTFT(ms)", "ITPS", "OTPS", "OET(ms)",
-            "Java Heap(KB)", "Native Heap(KB)", "PSS(KB)"
+            "ID",
+            "Food Name",
+            "Input Ingredients",
+            "Ground Truth Allergens",
+            "Predicted Allergens",
+            "TP",
+            "FP",
+            "FN",
+            "TN",
+            "Exact Match"
         )
         
         headers.forEachIndexed { index, header ->
@@ -101,57 +102,27 @@ object ExcelExporter {
             }
         }
         
-        // Data rows
+        // Data rows - Essential prediction records per project requirements
         foodList.forEachIndexed { rowIndex, food ->
             val row = sheet.createRow(rowIndex + 1)
             var colIndex = 0
             
-            // Basic info
+            // Prediction record: Input ingredients, ground truth, predictions, outcomes
             row.createCell(colIndex++).setCellValue(food.id)
             row.createCell(colIndex++).setCellValue(food.name)
             row.createCell(colIndex++).setCellValue(food.ingredients)
             row.createCell(colIndex++).setCellValue(food.allergensMapped)
             row.createCell(colIndex++).setCellValue(food.predictedAllergens)
             
-            // Quality Metrics
+            // Corresponding outcomes (TP, FP, FN, TN, Exact Match)
             food.qualityMetrics?.let { qm ->
                 row.createCell(colIndex++).setCellValue(qm.truePositives.toDouble())
                 row.createCell(colIndex++).setCellValue(qm.falsePositives.toDouble())
                 row.createCell(colIndex++).setCellValue(qm.falseNegatives.toDouble())
                 row.createCell(colIndex++).setCellValue(qm.trueNegatives.toDouble())
-                row.createCell(colIndex++).setCellValue(qm.precision)
-                row.createCell(colIndex++).setCellValue(qm.recall)
-                row.createCell(colIndex++).setCellValue(qm.f1ScoreMicro)
-                row.createCell(colIndex++).setCellValue(qm.f1ScoreMacro)
                 row.createCell(colIndex++).setCellValue(if (qm.isExactMatch) "YES" else "NO")
-                row.createCell(colIndex++).setCellValue(qm.hammingLoss)
-                row.createCell(colIndex++).setCellValue(qm.falseNegativeRate)
             } ?: run {
-                colIndex += 11 // Skip quality metric columns
-            }
-            
-            // Safety Metrics
-            food.safetyMetrics?.let { sm ->
-                row.createCell(colIndex++).setCellValue(sm.missedAllergens.joinToString(", "))
-                row.createCell(colIndex++).setCellValue(sm.overPredictedAllergens.joinToString(", "))
-                row.createCell(colIndex++).setCellValue(sm.hallucinatedAllergens.joinToString(", "))
-                row.createCell(colIndex++).setCellValue(
-                    sm.isCorrectAbstention?.let { if (it) "YES" else "NO" } ?: "N/A"
-                )
-            } ?: run {
-                colIndex += 4 // Skip safety metric columns
-            }
-            
-            // Efficiency Metrics
-            food.metrics?.let { m ->
-                row.createCell(colIndex++).setCellValue(m.latencyMs.toDouble())
-                row.createCell(colIndex++).setCellValue(m.ttft.toDouble())
-                row.createCell(colIndex++).setCellValue(m.itps.toDouble())
-                row.createCell(colIndex++).setCellValue(m.otps.toDouble())
-                row.createCell(colIndex++).setCellValue(m.oet.toDouble())
-                row.createCell(colIndex++).setCellValue(m.javaHeapKb.toDouble())
-                row.createCell(colIndex++).setCellValue(m.nativeHeapKb.toDouble())
-                row.createCell(colIndex++).setCellValue(m.totalPssKb.toDouble())
+                colIndex += 5 // Skip outcome columns if no metrics
             }
         }
         

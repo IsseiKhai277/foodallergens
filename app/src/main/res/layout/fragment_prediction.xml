@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background">
+
+    <!-- Header Section with Gradient -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/header_gradient"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="16dp"
+        android:elevation="4dp">
+
+        <TextView
+            android:id="@+id/textView2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Food Allergen Prediction"
+            android:textColor="@color/white"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:gravity="center" />
+
+    </RelativeLayout>
+
+    <!-- Content Container -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="12dp">
+
+        <!-- Data Set Selection Card -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="3dp"
+            app:cardBackgroundColor="@color/surface">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="12dp"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Data Set:"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_primary"
+                    android:layout_marginEnd="8dp" />
+
+                <Spinner
+                    android:id="@+id/spinnerDataSet"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:minHeight="40dp"
+                    android:background="@drawable/spinner_background"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp" />
+
+                <Button
+                    android:id="@+id/btnLoadDataSet"
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:text="Load"
+                    android:textAllCaps="false"
+                    android:minHeight="40dp"
+                    android:layout_marginStart="8dp"
+                    style="@style/RoundedButton" />
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+        
+        <!-- Model Selection Card -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="3dp"
+            app:cardBackgroundColor="@color/surface">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="12dp"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🤖 Model:"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_primary"
+                    android:layout_marginEnd="8dp" />
+
+                <Spinner
+                    android:id="@+id/spinnerModel"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:minHeight="40dp"
+                    android:background="@drawable/spinner_background"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp" />
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+        <!-- Prediction Control Card -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="6dp"
+            app:cardBackgroundColor="@color/surface">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <Button
+                    android:id="@+id/btnPredictAll"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="🔮 Predict All Items"
+                    android:textAllCaps="false"
+                    android:textSize="16sp"
+                    style="@style/RoundedButton" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center"
+                    android:layout_marginTop="12dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Status: "
+                        android:textSize="14sp"
+                        android:textColor="@color/text_secondary"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvProgress"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Ready"
+                        android:textSize="14sp"
+                        android:textColor="@color/primary"
+                        android:textStyle="bold" />
+
+                </LinearLayout>
+
+                <ProgressBar
+                    android:id="@+id/progressBar"
+                    style="?android:attr/progressBarStyleHorizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="8dp"
+                    android:layout_marginTop="12dp"
+                    android:progressDrawable="@drawable/progress_gradient"
+                    android:visibility="gone" />
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+        <!-- Results Header -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Results"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="@color/text_primary"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Results List -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:scrollbars="vertical"
+            android:clipToPadding="false"
+            android:paddingBottom="8dp" />
+
+    </LinearLayout>
+
+</LinearLayout>

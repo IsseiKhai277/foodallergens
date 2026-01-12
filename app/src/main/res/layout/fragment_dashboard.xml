@@ -1,0 +1,552 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#F5F5F5">
+
+    <!-- Header -->
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:cardElevation="4dp"
+        app:cardCornerRadius="0dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:background="#2196F3">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="📊 Model Performance Dashboard"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:textColor="#FFFFFF"
+                android:gravity="center"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Aggregated metrics for comparative analysis"
+                android:textSize="14sp"
+                android:textColor="#E3F2FD"
+                android:gravity="center"
+                android:layout_marginTop="4dp"/>
+
+        </LinearLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Main Content -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="12dp">
+
+        <!-- Action Buttons -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="12dp">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnRefresh"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Refresh"
+                android:textSize="14sp"
+                android:layout_marginEnd="6dp"
+                app:cornerRadius="8dp"
+                app:icon="@android:drawable/ic_menu_rotate"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnExport"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Export Excel"
+                android:textSize="14sp"
+                android:layout_marginStart="6dp"
+                app:cornerRadius="8dp"
+                app:icon="@android:drawable/ic_menu_save"
+                style="?attr/materialButtonOutlinedStyle" />
+
+        </LinearLayout>
+
+        <!-- Model Selector -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            app:cardElevation="2dp"
+            app:cardCornerRadius="8dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="12dp"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Select Model:"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:layout_marginEnd="8dp"/>
+
+                <Spinner
+                    android:id="@+id/spinnerModelFilter"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:minHeight="40dp"/>
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Metrics ScrollView -->
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+            <LinearLayout
+                android:id="@+id/metricsContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <!-- Sample Count Card -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    app:cardElevation="3dp"
+                    app:cardCornerRadius="12dp"
+                    app:cardBackgroundColor="#E3F2FD">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:padding="16dp"
+                        android:gravity="center">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="📋 Total Samples:"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:textColor="#1565C0"/>
+
+                        <TextView
+                            android:id="@+id/tvTotalSamples"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="0"
+                            android:textSize="24sp"
+                            android:textStyle="bold"
+                            android:textColor="#1565C0"
+                            android:layout_marginStart="12dp"/>
+
+                    </LinearLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Table 2: Quality Metrics -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    app:cardElevation="3dp"
+                    app:cardCornerRadius="12dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <!-- Header -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:background="#4CAF50"
+                            android:padding="12dp">
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="📊 Table 2: Prediction Quality Metrics"
+                                android:textSize="16sp"
+                                android:textStyle="bold"
+                                android:textColor="#FFFFFF"/>
+
+                        </LinearLayout>
+
+                        <!-- Metrics Table -->
+                        <TableLayout
+                            android:id="@+id/tableQuality"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:padding="8dp"
+                            android:stretchColumns="1">
+
+                            <!-- Header Row -->
+                            <TableRow android:background="#E8F5E9" android:padding="8dp">
+                                <TextView android:text="Metric" android:textStyle="bold" android:padding="8dp"/>
+                                <TextView android:text="Value" android:textStyle="bold" android:padding="8dp" android:gravity="end"/>
+                            </TableRow>
+
+                            <TableRow android:padding="4dp">
+                                <TextView android:id="@+id/labelPrecision" android:text="Precision" android:padding="8dp"/>
+                                <TextView android:id="@+id/tvPrecision" android:text="--" android:padding="8dp" android:gravity="end" android:fontFamily="monospace"/>
+                            </TableRow>
+
+                            <TableRow android:background="#F5F5F5" android:padding="4dp">
+                                <TextView android:id="@+id/labelRecall" android:text="Recall" android:padding="8dp"/>
+                                <TextView android:id="@+id/tvRecall" android:text="--" android:padding="8dp" android:gravity="end" android:fontFamily="monospace"/>
+                            </TableRow>
+
+                            <TableRow android:padding="4dp">
+                                <TextView android:id="@+id/labelMicroF1" android:text="Micro F1" android:padding="8dp"/>
+                                <TextView android:id="@+id/tvMicroF1" android:text="--" android:padding="8dp" android:gravity="end" android:fontFamily="monospace"/>
+                            </TableRow>
+
+                            <TableRow android:background="#F5F5F5" android:padding="4dp">
+                                <TextView android:id="@+id/labelMacroF1" android:text="Macro F1" android:padding="8dp"/>
+                                <TextView android:id="@+id/tvMacroF1" android:text="--" android:padding="8dp" android:gravity="end" android:fontFamily="monospace"/>
+                            </TableRow>
+
+                            <TableRow android:padding="4dp">
+                                <TextView android:id="@+id/labelEMR" android:text="Exact Match Ratio" android:padding="8dp"/>
+                                <TextView android:id="@+id/tvEMR" android:text="--" android:padding="8dp" android:gravity="end" android:fontFamily="monospace"/>
+                            </TableRow>
+
+                            <TableRow android:background="#F5F5F5" android:padding="4dp">
+                                <TextView android:id="@+id/labelHammingLoss" android:text="Hamming Loss" android:padding="8dp"/>
+                                <TextView android:id="@+id/tvHammingLoss" android:text="--" android:padding="8dp" android:gravity="end" android:fontFamily="monospace"/>
+                            </TableRow>
+
+                            <TableRow android:padding="4dp">
+                                <TextView android:id="@+id/labelFNR" android:text="False Negative Rate" android:padding="8dp"/>
+                                <TextView android:id="@+id/tvFNR" android:text="--" android:padding="8dp" android:gravity="end" android:fontFamily="monospace"/>
+                            </TableRow>
+
+                        </TableLayout>
+
+                    </LinearLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Table 3: Safety Metrics -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    app:cardElevation="3dp"
+                    app:cardCornerRadius="12dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <!-- Header -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:background="#FF9800"
+                            android:padding="12dp">
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="⚠️ Table 3: Safety-Oriented Metrics"
+                                android:textSize="16sp"
+                                android:textStyle="bold"
+                                android:textColor="#FFFFFF"/>
+
+                        </LinearLayout>
+
+                        <!-- Metrics Table -->
+                        <TableLayout
+                            android:id="@+id/tableSafety"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:padding="8dp"
+                            android:stretchColumns="1">
+
+                            <!-- Header Row -->
+                            <TableRow android:background="#FFF3E0" android:padding="8dp">
+                                <TextView android:text="Metric" android:textStyle="bold" android:padding="8dp"/>
+                                <TextView android:text="Value" android:textStyle="bold" android:padding="8dp" android:gravity="end"/>
+                            </TableRow>
+
+                            <TableRow android:padding="4dp">
+                                <TextView android:id="@+id/labelHallucination" android:text="Hallucination Rate" android:padding="8dp"/>
+                                <TextView android:id="@+id/tvHallucination" android:text="--" android:padding="8dp" android:gravity="end" android:fontFamily="monospace"/>
+                            </TableRow>
+
+                            <TableRow android:background="#F5F5F5" android:padding="4dp">
+                                <TextView android:id="@+id/labelOverPrediction" android:text="Over-Prediction Rate" android:padding="8dp"/>
+                                <TextView android:id="@+id/tvOverPrediction" android:text="--" android:padding="8dp" android:gravity="end" android:fontFamily="monospace"/>
+                            </TableRow>
+
+                            <TableRow android:padding="4dp">
+                                <TextView android:id="@+id/labelAbstention" android:text="Abstention Accuracy" android:padding="8dp"/>
+                                <TextView android:id="@+id/tvAbstention" android:text="--" android:padding="8dp" android:gravity="end" android:fontFamily="monospace"/>
+                            </TableRow>
+
+                        </TableLayout>
+
+                    </LinearLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Table 4: Efficiency Metrics -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    app:cardElevation="3dp"
+                    app:cardCornerRadius="12dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <!-- Header -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:background="#2196F3"
+                            android:padding="12dp">
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="⚡ Table 4: On-Device Efficiency Metrics"
+                                android:textSize="16sp"
+                                android:textStyle="bold"
+                                android:textColor="#FFFFFF"/>
+
+                        </LinearLayout>
+
+                        <!-- Metrics Table -->
+                        <TableLayout
+                            android:id="@+id/tableEfficiency"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:padding="8dp"
+                            android:stretchColumns="1">
+
+                            <!-- Header Row -->
+                            <TableRow android:background="#E3F2FD" android:padding="8dp">
+                                <TextView android:text="Metric" android:textStyle="bold" android:padding="8dp"/>
+                                <TextView android:text="Value" android:textStyle="bold" android:padding="8dp" android:gravity="end"/>
+                            </TableRow>
+
+                            <TableRow android:padding="4dp">
+                                <TextView android:id="@+id/labelLatency" android:text="Avg Latency" android:padding="8dp"/>
+                                <TextView android:id="@+id/tvLatency" android:text="--" android:padding="8dp" android:gravity="end" android:fontFamily="monospace"/>
+                            </TableRow>
+
+                            <TableRow android:background="#F5F5F5" android:padding="4dp">
+                                <TextView android:id="@+id/labelTTFT" android:text="Avg TTFT" android:padding="8dp"/>
+                                <TextView android:id="@+id/tvTTFT" android:text="--" android:padding="8dp" android:gravity="end" android:fontFamily="monospace"/>
+                            </TableRow>
+
+                            <TableRow android:padding="4dp">
+                                <TextView android:id="@+id/labelITPS" android:text="Avg ITPS" android:padding="8dp"/>
+                                <TextView android:id="@+id/tvITPS" android:text="--" android:padding="8dp" android:gravity="end" android:fontFamily="monospace"/>
+                            </TableRow>
+
+                            <TableRow android:background="#F5F5F5" android:padding="4dp">
+                                <TextView android:id="@+id/labelOTPS" android:text="Avg OTPS" android:padding="8dp"/>
+                                <TextView android:id="@+id/tvOTPS" android:text="--" android:padding="8dp" android:gravity="end" android:fontFamily="monospace"/>
+                            </TableRow>
+
+                            <TableRow android:padding="4dp">
+                                <TextView android:id="@+id/labelMemory" android:text="Avg Memory (PSS)" android:padding="8dp"/>
+                                <TextView android:id="@+id/tvMemory" android:text="--" android:padding="8dp" android:gravity="end" android:fontFamily="monospace"/>
+                            </TableRow>
+
+                        </TableLayout>
+
+                    </LinearLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Confusion Matrix Summary -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    app:cardElevation="3dp"
+                    app:cardCornerRadius="12dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <!-- Header -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:background="#9C27B0"
+                            android:padding="12dp">
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="🔢 Confusion Matrix Totals"
+                                android:textSize="16sp"
+                                android:textStyle="bold"
+                                android:textColor="#FFFFFF"/>
+
+                        </LinearLayout>
+
+                        <!-- Confusion Matrix Grid -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:padding="16dp">
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical"
+                                android:gravity="center"
+                                android:background="#E8F5E9"
+                                android:padding="12dp"
+                                android:layout_margin="4dp">
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="TP"
+                                    android:textStyle="bold"
+                                    android:textColor="#2E7D32"/>
+                                <TextView
+                                    android:id="@+id/tvTP"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="0"
+                                    android:textSize="20sp"
+                                    android:textStyle="bold"
+                                    android:textColor="#2E7D32"/>
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical"
+                                android:gravity="center"
+                                android:background="#FFEBEE"
+                                android:padding="12dp"
+                                android:layout_margin="4dp">
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="FP"
+                                    android:textStyle="bold"
+                                    android:textColor="#C62828"/>
+                                <TextView
+                                    android:id="@+id/tvFP"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="0"
+                                    android:textSize="20sp"
+                                    android:textStyle="bold"
+                                    android:textColor="#C62828"/>
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical"
+                                android:gravity="center"
+                                android:background="#FFF3E0"
+                                android:padding="12dp"
+                                android:layout_margin="4dp">
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="FN"
+                                    android:textStyle="bold"
+                                    android:textColor="#E65100"/>
+                                <TextView
+                                    android:id="@+id/tvFN"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="0"
+                                    android:textSize="20sp"
+                                    android:textStyle="bold"
+                                    android:textColor="#E65100"/>
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical"
+                                android:gravity="center"
+                                android:background="#E3F2FD"
+                                android:padding="12dp"
+                                android:layout_margin="4dp">
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="TN"
+                                    android:textStyle="bold"
+                                    android:textColor="#1565C0"/>
+                                <TextView
+                                    android:id="@+id/tvTN"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="0"
+                                    android:textSize="20sp"
+                                    android:textStyle="bold"
+                                    android:textColor="#1565C0"/>
+                            </LinearLayout>
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Export Info -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="💡 Tip: Export to Excel for detailed per-sample records and inclusion in project reports"
+                    android:textSize="12sp"
+                    android:textColor="#757575"
+                    android:gravity="center"
+                    android:padding="8dp"/>
+
+            </LinearLayout>
+
+        </ScrollView>
+
+    </LinearLayout>
+
+</LinearLayout>

@@ -286,7 +286,7 @@ std::string runModel(const std::string& prompt, const std::string& model_path) {
 
 extern "C"
 JNIEXPORT jstring JNICALL
-Java_edu_utem_ftmk_foodallergen_MainActivity_inferAllergens(
+Java_edu_utem_ftmk_foodallergen_PredictionFragment_inferAllergens(
         JNIEnv *env,
         jobject,
         jstring inputPrompt,
