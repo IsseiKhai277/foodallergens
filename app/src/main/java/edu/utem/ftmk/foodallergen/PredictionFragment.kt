@@ -138,32 +138,73 @@ class PredictionFragment : Fragment() {
     }
 
     private fun buildPrompt(ingredients: String): String {
-        return """Analyze these ingredients and identify allergens.
+        return """
 
-Ingredients: $ingredients
+            Analyze these ingredients and identify allergens.
 
-Allowed allergens: milk, egg, peanut, tree nut, wheat, soy, fish, shellfish, sesame
+            Ingredients: $ingredients
 
-Output format: List only the allergens found as comma-separated values (e.g., "milk,egg,wheat"). If no allergens are found, output "EMPTY". Do not include explanations or extra text.
+            Allowed allergens: milk, egg, peanut, tree nut, wheat, soy, fish, shellfish, sesame
 
-Allergens:"""
+            Output format: List only the allergens found as comma-separated values (e.g., "milk,egg,wheat"). If no allergens are found, output "EMPTY". Do not include explanations or extra text.
+
+            Allergens:"""
+    }
+
+    /*
+    promp temlate is different for each models
+     */
+    private fun wrapWithChatTemplate(promptContent: String): String {
+        return when {
+            selectedModel.contains("Llama", ignoreCase = true) -> {
+                "<|begin_of_text|><|start_header_id|>user<|end_header_id|>\n\n" +
+                promptContent +
+                "<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n"
+            }
+            selectedModel.contains("Phi", ignoreCase = true) -> {
+                "<|user|>\n" +
+                promptContent +
+                "<|end|>\n<|assistant|>\n"
+            }
+            selectedModel.contains("qwen", ignoreCase = true) -> {
+                "<|im_start|>user\n" +
+                promptContent +
+                "<|im_end|>\n<|im_start|>assistant\n"
+            }
+            selectedModel.contains("Vikhr", ignoreCase = true) || 
+            selectedModel.contains("Gemma", ignoreCase = true) -> {
+                "<start_of_turn>user\n" +
+                promptContent +
+                "<end_of_turn>\n<start_of_turn>model\n"
+            }
+            else -> promptContent // No wrapping for unknown models
+        }
     }
 
     private fun loadExcelData() {
         viewLifecycleOwner.lifecycleScope.launch {
             try {
+                // Check if fragment is still attached before accessing views
+                if (!isAdded || context == null) return@launch
+                
                 tvProgress.text = "Loading Excel data..."
 
+                val ctx = context ?: return@launch
                 val allFoodData = withContext(Dispatchers.IO) {
-                    ExcelReader.readFoodData(requireContext())
+                    ExcelReader.readFoodData(ctx)
                 }
 
+                // Check again after background work
+                if (!isAdded || context == null) return@launch
+
                 if (allFoodData.isEmpty()) {
-                    Toast.makeText(
-                        requireContext(),
-                        "No data found in Excel file",
-                        Toast.LENGTH_LONG
-                    ).show()
+                    context?.let {
+                        Toast.makeText(
+                            it,
+                            "No data found in Excel file",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
                     tvProgress.text = "No data loaded"
                     return@launch
                 }
@@ -173,38 +214,50 @@ Allergens:"""
 
                 // Setup spinner with dataset options
                 val dataSetOptions = allDataSets.indices.map { "Data Set ${it + 1} (${allDataSets[it].size} items)" }
-                val adapter = ArrayAdapter(
-                    requireContext(),
-                    android.R.layout.simple_spinner_item,
-                    dataSetOptions
-                )
-                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-                spinnerDataSet.adapter = adapter
+                context?.let { ctxInner ->
+                    val adapter = ArrayAdapter(
+                        ctxInner,
+                        android.R.layout.simple_spinner_item,
+                        dataSetOptions
+                    )
+                    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                    spinnerDataSet.adapter = adapter
+                }
 
                 // Load first dataset by default
                 loadSelectedDataSet()
 
-                Toast.makeText(
-                    requireContext(),
-                    "Loaded ${allFoodData.size} items in ${allDataSets.size} sets",
-                    Toast.LENGTH_LONG
-                ).show()
+                context?.let {
+                    Toast.makeText(
+                        it,
+                        "Loaded ${allFoodData.size} items in ${allDataSets.size} sets",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
 
-            } catch (e: Exception) {
-                Log.e("PredictionFragment", "Error loading Excel data", e)
-                Toast.makeText(
-                    requireContext(),
-                    "Error loading data: ${e.message}",
-                    Toast.LENGTH_LONG
-                ).show()
-                tvProgress.text = "Error loading data"
+            } catch (ex: Exception) {
+                Log.e("PredictionFragment", "Error loading Excel data", ex)
+                context?.let {
+                    Toast.makeText(
+                        it,
+                        "Error loading data: ${ex.message}",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+                if (isAdded) {
+                    tvProgress.text = "Error loading data"
+                }
             }
         }
     }
 
     private fun loadSelectedDataSet() {
+        if (!isAdded || context == null) return
+        
         if (allDataSets.isEmpty()) {
-            Toast.makeText(requireContext(), "No data sets available", Toast.LENGTH_SHORT).show()
+            context?.let {
+                Toast.makeText(it, "No data sets available", Toast.LENGTH_SHORT).show()
+            }
             return
         }
 
@@ -214,15 +267,19 @@ Allergens:"""
         foodAdapter.notifyDataSetChanged()
 
         tvProgress.text = "Loaded Set ${currentDataSet + 1} (${foodList.size} items)"
-        Toast.makeText(
-            requireContext(),
-            "Loaded Data Set ${currentDataSet + 1} with ${foodList.size} items",
-            Toast.LENGTH_SHORT
-        ).show()
+        context?.let {
+            Toast.makeText(
+                it,
+                "Loaded Data Set ${currentDataSet + 1} with ${foodList.size} items",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
     }
 
     private fun predictAllItems() {
         viewLifecycleOwner.lifecycleScope.launch {
+            if (!isAdded || context == null) return@launch
+            
             isPredicting = true
             btnPredictAll.isEnabled = false
             btnLoadDataSet.isEnabled = false
@@ -235,6 +292,9 @@ Allergens:"""
                 var completedItems = 0
 
                 for ((index, food) in foodList.withIndex()) {
+                    // Check if fragment is still attached
+                    if (!isAdded || context == null) break
+                    
                     // Update progress
                     tvProgress.text = "Predicting ${index + 1}/$totalItems..."
                     progressBar.progress = index
@@ -244,15 +304,19 @@ Allergens:"""
                         performPrediction(food)
                     }
 
+                    // Check again after background work
+                    if (!isAdded || context == null) break
+                    
                     // Update UI on main thread
                     foodAdapter.updateFood(index, updatedFood)
 
                     // Save to Firebase
+                    Log.d("PredictionFragment", "Attempting to save prediction ${index + 1}/${foodList.size}: ${updatedFood.name}")
                     val saveResult = FirebaseRepository.saveFoodPrediction(updatedFood)
                     if (saveResult.isSuccess) {
-                        Log.i("PredictionFragment", "Saved ${updatedFood.name} to Firebase")
+                        Log.i("PredictionFragment", "✓ Saved ${updatedFood.name} to Firebase (ID: ${saveResult.getOrNull()})")
                     } else {
-                        Log.e("PredictionFragment", "Failed to save ${updatedFood.name}", saveResult.exceptionOrNull())
+                        Log.e("PredictionFragment", "✗ Failed to save ${updatedFood.name}", saveResult.exceptionOrNull())
                     }
 
                     completedItems++
@@ -275,24 +339,32 @@ Allergens:"""
                 Log.i("PredictionFragment", "Micro F1: ${String.format("%.4f", qualityMetrics.microF1)}")
                 Log.i("PredictionFragment", "Macro F1: ${String.format("%.4f", qualityMetrics.macroF1)}")
 
-                Toast.makeText(
-                    requireContext(),
-                    "✅ EMR: ${String.format("%.1f", qualityMetrics.exactMatchRatio)}% | " +
-                            "F1: ${String.format("%.3f", qualityMetrics.microF1)} | Saved to Firebase",
-                    Toast.LENGTH_LONG
-                ).show()
-                
-                // Notify dashboard to refresh
-                (activity as? HostActivity)?.refreshDashboard()
+                if (isAdded && context != null) {
+                    context?.let {
+                        Toast.makeText(
+                            it,
+                            "✅ EMR: ${String.format("%.1f", qualityMetrics.exactMatchRatio)}% | " +
+                                    "F1: ${String.format("%.3f", qualityMetrics.microF1)} | Saved to Firebase",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+                    
+                    // Notify dashboard to refresh
+                    (activity as? HostActivity)?.refreshDashboard()
+                }
 
-            } catch (e: Exception) {
-                Log.e("PredictionFragment", "Error during prediction", e)
-                Toast.makeText(
-                    requireContext(),
-                    "Prediction failed: ${e.message}",
-                    Toast.LENGTH_LONG
-                ).show()
-                tvProgress.text = "Prediction failed"
+            } catch (ex: Exception) {
+                Log.e("PredictionFragment", "Error during prediction", ex)
+                if (isAdded && context != null) {
+                    context?.let {
+                        Toast.makeText(
+                            it,
+                            "Prediction failed: ${ex.message}",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+                    tvProgress.text = "Prediction failedf"
+                }
             } finally {
                 isPredicting = false
                 btnPredictAll.isEnabled = true
@@ -305,50 +377,78 @@ Allergens:"""
     private fun predictSingleItem(food: FoodData, position: Int) {
         viewLifecycleOwner.lifecycleScope.launch {
             try {
+                if (!isAdded || context == null) return@launch
+                
                 tvProgress.text = "Predicting ${food.name}..."
 
                 val updatedFood = withContext(Dispatchers.Default) {
                     performPrediction(food)
                 }
 
+                if (!isAdded || context == null) return@launch
+                
                 foodAdapter.updateFood(position, updatedFood)
 
                 // Save to Firebase
+                Log.d("PredictionFragment", "Attempting to save single prediction: ${updatedFood.name}")
+                Log.d("PredictionFragment", "Model: ${updatedFood.modelName}, Dataset: ${updatedFood.datasetNumber}")
                 val saveResult = FirebaseRepository.saveFoodPrediction(updatedFood)
+                
+                if (!isAdded || context == null) return@launch
+                
                 if (saveResult.isSuccess) {
-                    Toast.makeText(
-                        requireContext(),
-                        "Saved to Firebase",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    context?.let {
+                        Toast.makeText(
+                            it,
+                            "Saved to Firebase",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
                     tvProgress.text = "Prediction saved"
                 } else {
-                    Toast.makeText(
-                        requireContext(),
-                        "Failed to save to Firebase",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    context?.let {
+                        Toast.makeText(
+                            it,
+                            "Failed to save to Firebase",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
                     tvProgress.text = "Save failed"
                 }
 
-            } catch (e: Exception) {
-                Log.e("PredictionFragment", "Error predicting item", e)
-                Toast.makeText(
-                    requireContext(),
-                    "Prediction error: ${e.message}",
-                    Toast.LENGTH_SHORT
-                ).show()
-                tvProgress.text = "Prediction error"
+            } catch (ex: Exception) {
+                Log.e("PredictionFragment", "Error predicting item", ex)
+                if (isAdded && context != null) {
+                    context?.let {
+                        Toast.makeText(
+                            it,
+                            "Prediction error: ${ex.message}",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                    tvProgress.text = "Prediction error"
+                }
             }
         }
     }
 
     private fun performPrediction(food: FoodData): FoodData {
         val ingredients = food.ingredients
-        val prompt = buildPrompt(ingredients)
+        val promptContent = buildPrompt(ingredients)
+        val prompt = wrapWithChatTemplate(promptContent)
 
-        // Get model path
-        val modelPath = File(requireContext().filesDir, selectedModel).absolutePath
+        // Get model path - use context safely
+        val ctx = context
+        if (ctx == null) {
+            return food.copy(
+                predictedAllergens = "ERROR: Context not available",
+                timestamp = System.currentTimeMillis(),
+                modelName = selectedModel,
+                datasetNumber = currentDataSet + 1
+            )
+        }
+        
+        val modelPath = File(ctx.filesDir, selectedModel).absolutePath
 
         // Check if model file exists
         val modelFile = File(modelPath)
@@ -384,12 +484,12 @@ Allergens:"""
         var otps = -1L
         var oetMs = -1L
 
-        meta.split(";").forEach {
+        meta.split(";").forEach { part ->
             when {
-                it.startsWith("TTFT_MS=") -> ttftMs = it.removePrefix("TTFT_MS=").toLongOrNull() ?: -1L
-                it.startsWith("ITPS=") -> itps = it.removePrefix("ITPS=").toLongOrNull() ?: -1L
-                it.startsWith("OTPS=") -> otps = it.removePrefix("OTPS=").toLongOrNull() ?: -1L
-                it.startsWith("OET_MS=") -> oetMs = it.removePrefix("OET_MS=").toLongOrNull() ?: -1L
+                part.startsWith("TTFT_MS=") -> ttftMs = part.removePrefix("TTFT_MS=").toLongOrNull() ?: -1L
+                part.startsWith("ITPS=") -> itps = part.removePrefix("ITPS=").toLongOrNull() ?: -1L
+                part.startsWith("OTPS=") -> otps = part.removePrefix("OTPS=").toLongOrNull() ?: -1L
+                part.startsWith("OET_MS=") -> oetMs = part.removePrefix("OET_MS=").toLongOrNull() ?: -1L
             }
         }
 
@@ -503,7 +603,7 @@ Allergens:"""
                 }
             }
             Log.i("PredictionFragment", "Model $modelName copied successfully")
-        } catch (e: Exception) {
+        } catch (ex: Exception) {
             Log.w("PredictionFragment", "Model $modelName not found in assets")
         }
     }
@@ -515,8 +615,8 @@ Allergens:"""
         if (modelFiles.isNullOrEmpty()) {
             Log.w("PredictionFragment", "No .gguf model files found!")
         } else {
-            modelFiles.forEach { file ->
-                Log.i("PredictionFragment", "Found model: ${file.name} (${file.length() / 1024 / 1024} MB)")
+            modelFiles.forEach { modelFile ->
+                Log.i("PredictionFragment", "Found model: ${modelFile.name} (${modelFile.length() / 1024 / 1024} MB)")
             }
         }
     }

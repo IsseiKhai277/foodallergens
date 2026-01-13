@@ -174,8 +174,8 @@ object ExcelExporter {
             rowIndex++ // Empty row
         }
         
-        // Auto-size
-        sheet.autoSizeColumn(0)
-        sheet.autoSizeColumn(1)
+        // Set manual column widths (autoSizeColumn uses AWT which is not available on Android)
+        sheet.setColumnWidth(0, 8000) // ~40 characters
+        sheet.setColumnWidth(1, 5000) // ~25 characters
     }
 }

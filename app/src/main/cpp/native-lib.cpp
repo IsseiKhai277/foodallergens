@@ -12,6 +12,9 @@
 
 #define LOG_TAG "SLM_NATIVE"
 
+// Global flag to ensure backend is only initialized once
+static bool backend_initialized = false;
+
 /*llama_batch make_batch(
         const std::vector<llama_token>& tokens,
         int n_ctx) {
@@ -54,9 +57,18 @@ std::string runModel(const std::string& prompt, const std::string& model_path) {
 
     __android_log_print(ANDROID_LOG_INFO, LOG_TAG,
                         "runModel() started with model: %s", model_path.c_str());
+    
+    __android_log_print(ANDROID_LOG_INFO, LOG_TAG,
+                        "Prompt received: %s", prompt.c_str());
 
     // ================= Backend =================
-    llama_backend_init();
+    // Initialize backend only once
+    if (!backend_initialized) {
+        llama_backend_init();
+        backend_initialized = true;
+        __android_log_print(ANDROID_LOG_INFO, LOG_TAG,
+                            "Backend initialized");
+    }
 
     // ================= Load model =================
     llama_model_params model_params = llama_model_default_params();
@@ -72,7 +84,7 @@ std::string runModel(const std::string& prompt, const std::string& model_path) {
 
     // ================= Context =================
     llama_context_params ctx_params = llama_context_default_params();
-    ctx_params.n_ctx = 512;
+    ctx_params.n_ctx = 1024;  // Increased from 512 for better context
     ctx_params.n_threads = 4;
 
     llama_context* ctx = llama_init_from_model(model, ctx_params);
@@ -107,30 +119,49 @@ std::string runModel(const std::string& prompt, const std::string& model_path) {
     prompt_tokens.resize(n_prompt);
 
     // ================= Initial batch (prompt) =================
-    llama_batch batch = llama_batch_init(n_prompt, 0, ctx_params.n_ctx);
-    batch.n_tokens = n_prompt;
+    llama_batch initial_batch = llama_batch_init(n_prompt, 0, ctx_params.n_ctx);
+    initial_batch.n_tokens = n_prompt;
 
     for (int i = 0; i < n_prompt; i++) {
-        batch.token[i] = prompt_tokens[i];
-        batch.pos[i]   = i;
-        batch.seq_id[i][0] = 0;
-        batch.n_seq_id[i]  = 1;
-        batch.logits[i]    = false;
+        initial_batch.token[i] = prompt_tokens[i];
+        initial_batch.pos[i]   = i;
+        initial_batch.seq_id[i][0] = 0;
+        initial_batch.n_seq_id[i]  = 1;
+        initial_batch.logits[i]    = false;
     }
 
     // 🔑 logits only on LAST prompt token
-    batch.logits[n_prompt - 1] = true;
+    initial_batch.logits[n_prompt - 1] = true;
 
     // ================= Sampler =================
-    llama_sampler* sampler = llama_sampler_init_greedy();
+    // Create a sampler chain with temperature, top-p, and repetition penalty
+    llama_sampler* sampler = llama_sampler_chain_init(llama_sampler_chain_default_params());
+    
+    // Add repetition penalty to prevent repeating allergen names
+    llama_sampler_chain_add(sampler, llama_sampler_init_penalties(
+        64,      // last_n_tokens: consider last 64 tokens for penalty
+        1.2f,    // repeat_penalty: penalize repetition (1.0 = no penalty, higher = more penalty)
+        0.0f,    // freq_penalty
+        0.0f     // presence_penalty
+    ));
+    
+    // Add temperature sampling (0.1 = more focused, 1.0 = more random)
+    llama_sampler_chain_add(sampler, llama_sampler_init_temp(0.1f));
+    
+    // Add top-p sampling for diversity
+    llama_sampler_chain_add(sampler, llama_sampler_init_top_p(0.95f, 1));
+    
+    // Add greedy as fallback
+    llama_sampler_chain_add(sampler, llama_sampler_init_greedy());
 
     // ================= Prefill =================
     auto t_prefill_start = std::chrono::high_resolution_clock::now();
 
-    if (llama_decode(ctx, batch) != 0) {
+    if (llama_decode(ctx, initial_batch) != 0) {
         __android_log_print(ANDROID_LOG_ERROR, LOG_TAG,
                             "Prompt decode failed");
         llama_sampler_free(sampler);
+        llama_batch_free(initial_batch);
         llama_free(ctx);
         llama_free_model(model);
         return "TTFT_MS=0;ITPS=0;OTPS=0;OET_MS=0|ERROR_DECODE_FAILED";
@@ -148,12 +179,14 @@ std::string runModel(const std::string& prompt, const std::string& model_path) {
 
     // ================= Generation =================
     std::string output;
-    const int max_tokens = 64;
+    const int max_tokens = 32;  // Reduced from 64 - we only need a short list of allergens
 
     int n_pos = 0;
     int n_predict = max_tokens;
 
     auto t_gen_start = std::chrono::high_resolution_clock::now();
+
+    llama_batch batch;  // Used for generation loop
 
     while (n_pos + batch.n_tokens < n_prompt + n_predict) {
 
@@ -264,7 +297,7 @@ std::string runModel(const std::string& prompt, const std::string& model_path) {
 
     // ================= Cleanup =================
     llama_sampler_free(sampler);
-    //llama_batch_free(batch);
+    llama_batch_free(initial_batch);  // Only free the batch created with llama_batch_init
     llama_free(ctx);
     llama_free_model(model);
 

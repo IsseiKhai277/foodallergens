@@ -1,6 +1,7 @@
 package edu.utem.ftmk.foodallergen
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -78,6 +79,7 @@ class DashboardFragment : Fragment() {
 
     private var dataByModel: Map<String, List<FoodData>> = emptyMap()
     private var currentModel: String = "All Models"
+    private var isDataLoaded: Boolean = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -129,12 +131,23 @@ class DashboardFragment : Fragment() {
     }
 
     private fun setupListeners() {
+        // Disable export button initially until data is loaded
+        btnExport.isEnabled = false
+        
         btnRefresh.setOnClickListener {
             loadDashboardData()
         }
 
         btnExport.setOnClickListener {
-            exportResults()
+            if (isDataLoaded && dataByModel.isNotEmpty()) {
+                exportResults()
+            } else {
+                android.widget.Toast.makeText(
+                    requireContext(),
+                    "No data available to export. Please wait for data to load.",
+                    android.widget.Toast.LENGTH_SHORT
+                ).show()
+            }
         }
 
         spinnerModelFilter.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
@@ -149,24 +162,61 @@ class DashboardFragment : Fragment() {
     }
 
     fun loadDashboardData() {
+        // Check if view is available before accessing viewLifecycleOwner
+        if (!isAdded || view == null) {
+            Log.w("DashboardFragment", "Cannot load data - Fragment view not available")
+            return
+        }
+        
         viewLifecycleOwner.lifecycleScope.launch {
             try {
+                Log.d("DashboardFragment", "loadDashboardData called")
+                
+                // Double-check view is still available after coroutine launch
+                if (!isAdded || view == null) {
+                    Log.w("DashboardFragment", "View destroyed after coroutine launch")
+                    return@launch
+                }
+                
                 tvTotalSamples.text = "Loading..."
+                btnExport.isEnabled = false
+                isDataLoaded = false
 
                 val result = FirebaseRepository.getAllPredictionsGroupedByModel()
 
                 if (result.isFailure) {
+                    Log.e("DashboardFragment", "Failed to load data", result.exceptionOrNull())
                     tvTotalSamples.text = "Error"
+                    btnExport.isEnabled = false
+                    android.widget.Toast.makeText(
+                        requireContext(),
+                        "Failed to load data: ${result.exceptionOrNull()?.message}",
+                        android.widget.Toast.LENGTH_SHORT
+                    ).show()
                     return@launch
                 }
 
                 dataByModel = result.getOrNull() ?: emptyMap()
+                Log.d("DashboardFragment", "Loaded data for ${dataByModel.size} models")
+
+                if (dataByModel.isEmpty()) {
+                    Log.w("DashboardFragment", "No data found in Firestore")
+                    tvTotalSamples.text = "No data"
+                    btnExport.isEnabled = false
+                    android.widget.Toast.makeText(
+                        requireContext(),
+                        "No predictions found. Please run predictions first.",
+                        android.widget.Toast.LENGTH_SHORT
+                    ).show()
+                    return@launch
+                }
 
                 // Setup model filter spinner
                 val modelOptions = mutableListOf("All Models")
                 modelOptions.addAll(dataByModel.keys.map { 
                     it.substringBefore("-Q").substringBefore(".gguf") 
                 })
+                Log.d("DashboardFragment", "Model options: $modelOptions")
 
                 val adapter = ArrayAdapter(
                     requireContext(),
@@ -176,16 +226,29 @@ class DashboardFragment : Fragment() {
                 adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
                 spinnerModelFilter.adapter = adapter
 
+                isDataLoaded = true
+                btnExport.isEnabled = true
                 updateMetricsDisplay()
 
             } catch (e: Exception) {
+                Log.e("DashboardFragment", "Error loading dashboard", e)
                 tvTotalSamples.text = "Error"
+                btnExport.isEnabled = false
+                isDataLoaded = false
+                android.widget.Toast.makeText(
+                    requireContext(),
+                    "Error loading dashboard: ${e.message}",
+                    android.widget.Toast.LENGTH_SHORT
+                ).show()
             }
         }
     }
 
     private fun updateMetricsDisplay() {
+        Log.d("DashboardFragment", "updateMetricsDisplay called, currentModel=$currentModel")
+        
         if (dataByModel.isEmpty()) {
+            Log.w("DashboardFragment", "dataByModel is empty")
             setEmptyState()
             return
         }
@@ -200,7 +263,10 @@ class DashboardFragment : Fragment() {
             }?.value ?: emptyList()
         }
 
+        Log.d("DashboardFragment", "Food list size: ${foodList.size}")
+        
         if (foodList.isEmpty()) {
+            Log.w("DashboardFragment", "Food list is empty after filtering")
             setEmptyState()
             return
         }
@@ -232,6 +298,8 @@ class DashboardFragment : Fragment() {
     }
 
     private fun calculateAndDisplayMetrics(foodList: List<FoodData>) {
+        Log.d("DashboardFragment", "calculateAndDisplayMetrics called with ${foodList.size} items")
+        
         // Aggregate confusion matrix counts from stored data
         var totalTP = 0
         var totalFP = 0
@@ -413,8 +481,24 @@ class DashboardFragment : Fragment() {
     }
 
     private fun exportResults() {
+        if (!isDataLoaded || dataByModel.isEmpty()) {
+            android.widget.Toast.makeText(
+                requireContext(),
+                "No data available to export. Please wait for data to load.",
+                android.widget.Toast.LENGTH_SHORT
+            ).show()
+            return
+        }
+
         viewLifecycleOwner.lifecycleScope.launch {
             try {
+                btnExport.isEnabled = false
+                android.widget.Toast.makeText(
+                    requireContext(),
+                    "Exporting data to Excel...",
+                    android.widget.Toast.LENGTH_SHORT
+                ).show()
+
                 val fetchResult = FirebaseRepository.getAllPredictionsGroupedByModel()
 
                 if (fetchResult.isFailure) {
@@ -423,10 +507,21 @@ class DashboardFragment : Fragment() {
                         "Export failed: ${fetchResult.exceptionOrNull()?.message}",
                         android.widget.Toast.LENGTH_SHORT
                     ).show()
+                    btnExport.isEnabled = true
                     return@launch
                 }
 
                 val data = fetchResult.getOrNull() ?: emptyMap()
+                if (data.isEmpty()) {
+                    android.widget.Toast.makeText(
+                        requireContext(),
+                        "No data to export",
+                        android.widget.Toast.LENGTH_SHORT
+                    ).show()
+                    btnExport.isEnabled = true
+                    return@launch
+                }
+
                 val exportResult = ExcelExporter.exportToExcel(requireContext(), data)
 
                 if (exportResult.isSuccess) {
@@ -449,6 +544,8 @@ class DashboardFragment : Fragment() {
                     "❌ Export error: ${e.message}",
                     android.widget.Toast.LENGTH_SHORT
                 ).show()
+            } finally {
+                btnExport.isEnabled = true
             }
         }
     }
