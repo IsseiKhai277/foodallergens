@@ -71,15 +71,17 @@
                     android:paddingStart="8dp"
                     android:paddingEnd="8dp" />
 
-                <Button
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnLoadDataSet"
                     android:layout_width="wrap_content"
                     android:layout_height="40dp"
-                    android:text="Load"
-                    android:textAllCaps="false"
-                    android:minHeight="40dp"
                     android:layout_marginStart="8dp"
-                    style="@style/RoundedButton" />
+                    android:minHeight="40dp"
+                    android:text="Load"
+                    android:textColor="#FFFFFF"
+                    android:textAllCaps="false"
+                    app:cornerRadius="20dp"
+                    app:backgroundTint="@color/primary" />
 
             </LinearLayout>
 

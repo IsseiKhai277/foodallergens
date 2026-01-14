@@ -80,12 +80,7 @@ class FoodAdapter(
                 sb.append("📊 QUALITY METRICS\n")
                 sb.append("TP=${qm.truePositives} FP=${qm.falsePositives} ")
                 sb.append("FN=${qm.falseNegatives} TN=${qm.trueNegatives}\n")
-                sb.append("Precision: ${String.format("%.3f", qm.precision)} | ")
-                sb.append("Recall: ${String.format("%.3f", qm.recall)}\n")
-                sb.append("F1(micro): ${String.format("%.3f", qm.f1ScoreMicro)} | ")
-                sb.append("F1(macro): ${String.format("%.3f", qm.f1ScoreMacro)}\n")
-                sb.append("Hamming Loss: ${String.format("%.3f", qm.hammingLoss)} | ")
-                sb.append("FNR: ${String.format("%.3f", qm.falseNegativeRate)}\n")
+                // Removed: Precision, Recall, F1(micro), F1(macro), Hamming Loss, FNR
                 sb.append("Exact Match: ${if (qm.isExactMatch) "✅" else "❌"}\n\n")
             }
             

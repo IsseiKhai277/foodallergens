@@ -165,232 +165,7 @@
 
                 </com.google.android.material.card.MaterialCardView>
 
-                <!-- Table 2: Quality Metrics -->
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="12dp"
-                    app:cardElevation="3dp"
-                    app:cardCornerRadius="12dp">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical">
-
-                        <!-- Header -->
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:background="#4CAF50"
-                            android:padding="12dp">
-
-                            <TextView
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:text="📊 Table 2: Prediction Quality Metrics"
-                                android:textSize="16sp"
-                                android:textStyle="bold"
-                                android:textColor="#FFFFFF"/>
-
-                        </LinearLayout>
-
-                        <!-- Metrics Table -->
-                        <TableLayout
-                            android:id="@+id/tableQuality"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:padding="8dp"
-                            android:stretchColumns="1">
-
-                            <!-- Header Row -->
-                            <TableRow android:background="#E8F5E9" android:padding="8dp">
-                                <TextView android:text="Metric" android:textStyle="bold" android:padding="8dp"/>
-                                <TextView android:text="Value" android:textStyle="bold" android:padding="8dp" android:gravity="end"/>
-                            </TableRow>
-
-                            <TableRow android:padding="4dp">
-                                <TextView android:id="@+id/labelPrecision" android:text="Precision" android:padding="8dp"/>
-                                <TextView android:id="@+id/tvPrecision" android:text="--" android:padding="8dp" android:gravity="end" android:fontFamily="monospace"/>
-                            </TableRow>
-
-                            <TableRow android:background="#F5F5F5" android:padding="4dp">
-                                <TextView android:id="@+id/labelRecall" android:text="Recall" android:padding="8dp"/>
-                                <TextView android:id="@+id/tvRecall" android:text="--" android:padding="8dp" android:gravity="end" android:fontFamily="monospace"/>
-                            </TableRow>
-
-                            <TableRow android:padding="4dp">
-                                <TextView android:id="@+id/labelMicroF1" android:text="Micro F1" android:padding="8dp"/>
-                                <TextView android:id="@+id/tvMicroF1" android:text="--" android:padding="8dp" android:gravity="end" android:fontFamily="monospace"/>
-                            </TableRow>
-
-                            <TableRow android:background="#F5F5F5" android:padding="4dp">
-                                <TextView android:id="@+id/labelMacroF1" android:text="Macro F1" android:padding="8dp"/>
-                                <TextView android:id="@+id/tvMacroF1" android:text="--" android:padding="8dp" android:gravity="end" android:fontFamily="monospace"/>
-                            </TableRow>
-
-                            <TableRow android:padding="4dp">
-                                <TextView android:id="@+id/labelEMR" android:text="Exact Match Ratio" android:padding="8dp"/>
-                                <TextView android:id="@+id/tvEMR" android:text="--" android:padding="8dp" android:gravity="end" android:fontFamily="monospace"/>
-                            </TableRow>
-
-                            <TableRow android:background="#F5F5F5" android:padding="4dp">
-                                <TextView android:id="@+id/labelHammingLoss" android:text="Hamming Loss" android:padding="8dp"/>
-                                <TextView android:id="@+id/tvHammingLoss" android:text="--" android:padding="8dp" android:gravity="end" android:fontFamily="monospace"/>
-                            </TableRow>
-
-                            <TableRow android:padding="4dp">
-                                <TextView android:id="@+id/labelFNR" android:text="False Negative Rate" android:padding="8dp"/>
-                                <TextView android:id="@+id/tvFNR" android:text="--" android:padding="8dp" android:gravity="end" android:fontFamily="monospace"/>
-                            </TableRow>
-
-                        </TableLayout>
-
-                    </LinearLayout>
-
-                </com.google.android.material.card.MaterialCardView>
-
-                <!-- Table 3: Safety Metrics -->
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="12dp"
-                    app:cardElevation="3dp"
-                    app:cardCornerRadius="12dp">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical">
-
-                        <!-- Header -->
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:background="#FF9800"
-                            android:padding="12dp">
-
-                            <TextView
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:text="⚠️ Table 3: Safety-Oriented Metrics"
-                                android:textSize="16sp"
-                                android:textStyle="bold"
-                                android:textColor="#FFFFFF"/>
-
-                        </LinearLayout>
-
-                        <!-- Metrics Table -->
-                        <TableLayout
-                            android:id="@+id/tableSafety"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:padding="8dp"
-                            android:stretchColumns="1">
-
-                            <!-- Header Row -->
-                            <TableRow android:background="#FFF3E0" android:padding="8dp">
-                                <TextView android:text="Metric" android:textStyle="bold" android:padding="8dp"/>
-                                <TextView android:text="Value" android:textStyle="bold" android:padding="8dp" android:gravity="end"/>
-                            </TableRow>
-
-                            <TableRow android:padding="4dp">
-                                <TextView android:id="@+id/labelHallucination" android:text="Hallucination Rate" android:padding="8dp"/>
-                                <TextView android:id="@+id/tvHallucination" android:text="--" android:padding="8dp" android:gravity="end" android:fontFamily="monospace"/>
-                            </TableRow>
-
-                            <TableRow android:background="#F5F5F5" android:padding="4dp">
-                                <TextView android:id="@+id/labelOverPrediction" android:text="Over-Prediction Rate" android:padding="8dp"/>
-                                <TextView android:id="@+id/tvOverPrediction" android:text="--" android:padding="8dp" android:gravity="end" android:fontFamily="monospace"/>
-                            </TableRow>
-
-                            <TableRow android:padding="4dp">
-                                <TextView android:id="@+id/labelAbstention" android:text="Abstention Accuracy" android:padding="8dp"/>
-                                <TextView android:id="@+id/tvAbstention" android:text="--" android:padding="8dp" android:gravity="end" android:fontFamily="monospace"/>
-                            </TableRow>
-
-                        </TableLayout>
-
-                    </LinearLayout>
-
-                </com.google.android.material.card.MaterialCardView>
-
-                <!-- Table 4: Efficiency Metrics -->
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="12dp"
-                    app:cardElevation="3dp"
-                    app:cardCornerRadius="12dp">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical">
-
-                        <!-- Header -->
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:background="#2196F3"
-                            android:padding="12dp">
-
-                            <TextView
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:text="⚡ Table 4: On-Device Efficiency Metrics"
-                                android:textSize="16sp"
-                                android:textStyle="bold"
-                                android:textColor="#FFFFFF"/>
-
-                        </LinearLayout>
-
-                        <!-- Metrics Table -->
-                        <TableLayout
-                            android:id="@+id/tableEfficiency"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:padding="8dp"
-                            android:stretchColumns="1">
-
-                            <!-- Header Row -->
-                            <TableRow android:background="#E3F2FD" android:padding="8dp">
-                                <TextView android:text="Metric" android:textStyle="bold" android:padding="8dp"/>
-                                <TextView android:text="Value" android:textStyle="bold" android:padding="8dp" android:gravity="end"/>
-                            </TableRow>
-
-                            <TableRow android:padding="4dp">
-                                <TextView android:id="@+id/labelLatency" android:text="Avg Latency" android:padding="8dp"/>
-                                <TextView android:id="@+id/tvLatency" android:text="--" android:padding="8dp" android:gravity="end" android:fontFamily="monospace"/>
-                            </TableRow>
-
-                            <TableRow android:background="#F5F5F5" android:padding="4dp">
-                                <TextView android:id="@+id/labelTTFT" android:text="Avg TTFT" android:padding="8dp"/>
-                                <TextView android:id="@+id/tvTTFT" android:text="--" android:padding="8dp" android:gravity="end" android:fontFamily="monospace"/>
-                            </TableRow>
-
-                            <TableRow android:padding="4dp">
-                                <TextView android:id="@+id/labelITPS" android:text="Avg ITPS" android:padding="8dp"/>
-                                <TextView android:id="@+id/tvITPS" android:text="--" android:padding="8dp" android:gravity="end" android:fontFamily="monospace"/>
-                            </TableRow>
-
-                            <TableRow android:background="#F5F5F5" android:padding="4dp">
-                                <TextView android:id="@+id/labelOTPS" android:text="Avg OTPS" android:padding="8dp"/>
-                                <TextView android:id="@+id/tvOTPS" android:text="--" android:padding="8dp" android:gravity="end" android:fontFamily="monospace"/>
-                            </TableRow>
-
-                            <TableRow android:padding="4dp">
-                                <TextView android:id="@+id/labelMemory" android:text="Avg Memory (PSS)" android:padding="8dp"/>
-                                <TextView android:id="@+id/tvMemory" android:text="--" android:padding="8dp" android:gravity="end" android:fontFamily="monospace"/>
-                            </TableRow>
-
-                        </TableLayout>
-
-                    </LinearLayout>
-
-                </com.google.android.material.card.MaterialCardView>
-
-                <!-- Confusion Matrix Summary -->
+                <!-- Confusion Matrix Summary (MOVED TO TOP) -->
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -526,6 +301,395 @@
                                     android:textStyle="bold"
                                     android:textColor="#1565C0"/>
                             </LinearLayout>
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Table 2: Prediction Quality Metrics -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    app:cardElevation="3dp"
+                    app:cardCornerRadius="12dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <!-- Header -->
+
+                        <!-- Metrics Table -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:background="#4CAF50"
+                            android:padding="12dp">
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="Prediction Quality Metrics"
+                                android:textColor="#FFFFFF"
+                                android:textSize="16sp"
+                                android:textStyle="bold" />
+
+                        </LinearLayout>
+
+                        <TableLayout
+                            android:id="@+id/tableQuality"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:padding="8dp"
+                            android:stretchColumns="1">
+
+                            <!-- Header Row -->
+                            <TableRow android:background="#E8F5E9" android:padding="8dp">
+                                <TextView android:text="Metric" android:textStyle="bold" android:padding="8dp"/>
+                                <TextView android:text="Value" android:textStyle="bold" android:padding="22dp" android:gravity="end"/>
+                            </TableRow>
+
+                            <TableRow android:padding="4dp">
+                                <TextView android:id="@+id/labelPrecision" android:text="Precision" android:padding="8dp"/>
+                                <TextView android:id="@+id/tvPrecision" android:text="--" android:padding="8dp" android:gravity="end" android:fontFamily="monospace"/>
+                            </TableRow>
+
+                            <TableRow android:background="#F5F5F5" android:padding="4dp">
+                                <TextView android:id="@+id/labelRecall" android:text="Recall" android:padding="8dp"/>
+                                <TextView android:id="@+id/tvRecall" android:text="--" android:padding="8dp" android:gravity="end" android:fontFamily="monospace"/>
+                            </TableRow>
+
+                            <TableRow android:padding="4dp">
+                                <TextView android:id="@+id/labelMicroF1" android:text="Micro F1" android:padding="8dp"/>
+                                <TextView android:id="@+id/tvMicroF1" android:text="--" android:padding="8dp" android:gravity="end" android:fontFamily="monospace"/>
+                            </TableRow>
+
+                            <TableRow android:background="#F5F5F5" android:padding="4dp">
+                                <TextView android:id="@+id/labelMacroF1" android:text="Macro F1" android:padding="8dp"/>
+                                <TextView android:id="@+id/tvMacroF1" android:text="--" android:padding="8dp" android:gravity="end" android:fontFamily="monospace"/>
+                            </TableRow>
+
+                            <TableRow android:padding="4dp">
+                                <TextView android:id="@+id/labelEMR" android:text="Exact Match Ratio" android:padding="8dp"/>
+                                <TextView android:id="@+id/tvEMR" android:text="--" android:padding="8dp" android:gravity="end" android:fontFamily="monospace"/>
+                            </TableRow>
+
+                            <TableRow android:background="#F5F5F5" android:padding="4dp">
+                                <TextView android:id="@+id/labelHammingLoss" android:text="Hamming Loss" android:padding="8dp"/>
+                                <TextView android:id="@+id/tvHammingLoss" android:text="--" android:padding="8dp" android:gravity="end" android:fontFamily="monospace"/>
+                            </TableRow>
+
+                            <TableRow android:padding="4dp">
+                                <TextView android:id="@+id/labelFNR" android:text="False Negative Rate" android:padding="8dp"/>
+                                <TextView android:id="@+id/tvFNR" android:text="--" android:padding="8dp" android:gravity="end" android:fontFamily="monospace"/>
+                            </TableRow>
+
+                        </TableLayout>
+
+                    </LinearLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Table 3: Safety Metrics -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    app:cardElevation="3dp"
+                    app:cardCornerRadius="12dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <!-- Header -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:background="#FF9800"
+                            android:padding="12dp">
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="Safety-Oriented Metrics"
+                                android:textColor="#FFFFFF"
+                                android:textSize="16sp"
+                                android:textStyle="bold" />
+
+                        </LinearLayout>
+
+                        <!-- Metrics Table -->
+                        <TableLayout
+                            android:id="@+id/tableSafety"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:padding="8dp"
+                            android:stretchColumns="1">
+
+                            <!-- Header Row -->
+                            <TableRow android:background="#FFF3E0" android:padding="8dp">
+                                <TextView android:text="Metric" android:textStyle="bold" android:padding="8dp"/>
+                                <TextView android:text="Value" android:textStyle="bold" android:padding="22dp" android:gravity="end"/>
+                            </TableRow>
+
+                            <TableRow android:padding="4dp">
+                                <TextView android:id="@+id/labelHallucination" android:text="Hallucination Rate" android:padding="8dp"/>
+                                <TextView android:id="@+id/tvHallucination" android:text="--" android:padding="8dp" android:gravity="end" android:fontFamily="monospace"/>
+                            </TableRow>
+
+                            <TableRow android:background="#F5F5F5" android:padding="4dp">
+                                <TextView android:id="@+id/labelOverPrediction" android:text="Over-Prediction Rate" android:padding="8dp"/>
+                                <TextView android:id="@+id/tvOverPrediction" android:text="--" android:padding="8dp" android:gravity="end" android:fontFamily="monospace"/>
+                            </TableRow>
+
+                            <TableRow android:padding="4dp">
+                                <TextView android:id="@+id/labelAbstention" android:text="Abstention Accuracy" android:padding="8dp"/>
+                                <TextView android:id="@+id/tvAbstention" android:text="--" android:padding="8dp" android:gravity="end" android:fontFamily="monospace"/>
+                            </TableRow>
+
+                        </TableLayout>
+
+                    </LinearLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Table 4: On-Device Efficiency Metrics -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    app:cardElevation="3dp"
+                    app:cardCornerRadius="12dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <!-- Header -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:background="#2196F3"
+                            android:padding="12dp">
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="On-Device Efficiency Metrics"
+                                android:textColor="#FFFFFF"
+                                android:textSize="16sp"
+                                android:textStyle="bold" />
+
+                        </LinearLayout>
+
+                        <!-- Metrics Table -->
+                        <TableLayout
+                            android:id="@+id/tableEfficiency"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:padding="8dp"
+                            android:stretchColumns="1">
+
+                            <!-- Header Row -->
+                            <TableRow android:background="#E3F2FD" android:padding="8dp">
+                                <TextView android:text="Metric" android:textStyle="bold" android:padding="8dp"/>
+                                <TextView android:text="Value" android:textStyle="bold" android:padding="22dp" android:gravity="end"/>
+                            </TableRow>
+
+                            <TableRow android:padding="4dp">
+                                <TextView android:id="@+id/labelLatency" android:text="Avg Latency" android:padding="8dp"/>
+                                <TextView android:id="@+id/tvLatency" android:text="--" android:padding="8dp" android:gravity="end" android:fontFamily="monospace"/>
+                            </TableRow>
+
+                            <TableRow android:background="#F5F5F5" android:padding="4dp">
+                                <TextView android:id="@+id/labelTTFT" android:text="Avg TTFT" android:padding="8dp"/>
+                                <TextView android:id="@+id/tvTTFT" android:text="--" android:padding="8dp" android:gravity="end" android:fontFamily="monospace"/>
+                            </TableRow>
+
+                            <TableRow android:padding="4dp">
+                                <TextView android:id="@+id/labelITPS" android:text="Avg ITPS" android:padding="8dp"/>
+                                <TextView android:id="@+id/tvITPS" android:text="--" android:padding="8dp" android:gravity="end" android:fontFamily="monospace"/>
+                            </TableRow>
+
+                            <TableRow android:background="#F5F5F5" android:padding="4dp">
+                                <TextView android:id="@+id/labelOTPS" android:text="Avg OTPS" android:padding="8dp"/>
+                                <TextView android:id="@+id/tvOTPS" android:text="--" android:padding="8dp" android:gravity="end" android:fontFamily="monospace"/>
+                            </TableRow>
+
+                            <TableRow android:padding="4dp">
+                                <TextView android:id="@+id/labelOET" android:text="Avg OET" android:padding="8dp"/>
+                                <TextView android:id="@+id/tvOET" android:text="--" android:padding="8dp" android:gravity="end" android:fontFamily="monospace"/>
+                            </TableRow>
+
+                            <TableRow android:background="#F5F5F5" android:padding="4dp">
+                                <TextView android:id="@+id/labelMemory" android:text="Avg Memory (PSS)" android:padding="8dp"/>
+                                <TextView android:id="@+id/tvMemory" android:text="--" android:padding="8dp" android:gravity="end" android:fontFamily="monospace"/>
+                            </TableRow>
+
+                            <TableRow android:padding="4dp">
+                                <TextView android:id="@+id/labelJavaHeap" android:text="Avg Java Heap" android:padding="8dp"/>
+                                <TextView android:id="@+id/tvJavaHeap" android:text="--" android:padding="8dp" android:gravity="end" android:fontFamily="monospace"/>
+                            </TableRow>
+
+                            <TableRow android:background="#F5F5F5" android:padding="4dp">
+                                <TextView android:id="@+id/labelNativeHeap" android:text="Avg Native Heap" android:padding="8dp"/>
+                                <TextView android:id="@+id/tvNativeHeap" android:text="--" android:padding="8dp" android:gravity="end" android:fontFamily="monospace"/>
+                            </TableRow>
+
+                        </TableLayout>
+
+                    </LinearLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Model Comparison & Recommendation Card -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardModelComparison"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    app:cardElevation="4dp"
+                    app:cardCornerRadius="12dp"
+                    app:strokeColor="#FFD700"
+                    app:strokeWidth="2dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <!-- Header -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:background="#673AB7"
+                            android:padding="12dp">
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="🏆 Model Comparison"
+                                android:textColor="#FFFFFF"
+                                android:textSize="16sp"
+                                android:textStyle="bold" />
+
+                        </LinearLayout>
+
+                        <!-- Recommended Model Section -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:background="#F3E5F5"
+                            android:padding="16dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="🥇 BEST MODEL"
+                                android:textSize="12sp"
+                                android:textStyle="bold"
+                                android:textColor="#7B1FA2"/>
+
+                            <TextView
+                                android:id="@+id/tvRecommendedModel"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="--"
+                                android:textSize="18sp"
+                                android:textStyle="bold"
+                                android:textColor="#4A148C"
+                                android:layout_marginTop="4dp"/>
+
+                            <TextView
+                                android:id="@+id/tvRecommendationReason"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="Run predictions with multiple models to see recommendations"
+                                android:textSize="12sp"
+                                android:textColor="#6A1B9A"
+                                android:layout_marginTop="4dp"/>
+
+                        </LinearLayout>
+
+                        <!-- Comparison Table -->
+                        <TableLayout
+                            android:id="@+id/tableModelComparison"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:padding="8dp"
+                            android:stretchColumns="1,2,3,4,5">
+
+                            <!-- Header Row -->
+                            <TableRow android:background="#EDE7F6" android:padding="4dp">
+                                <TextView
+                                    android:text="Rank"
+                                    android:textStyle="bold"
+                                    android:padding="6dp"
+                                    android:gravity="center"
+                                    android:textSize="11sp"/>
+                                <TextView
+                                    android:text="Model"
+                                    android:textStyle="bold"
+                                    android:padding="6dp"
+                                    android:textSize="11sp"/>
+                                <TextView
+                                    android:text="F1↑"
+                                    android:textStyle="bold"
+                                    android:padding="6dp"
+                                    android:gravity="center"
+                                    android:textSize="11sp"/>
+                                <TextView
+                                    android:text="Recall↑"
+                                    android:textStyle="bold"
+                                    android:padding="6dp"
+                                    android:gravity="center"
+                                    android:textSize="11sp"/>
+                                <TextView
+                                    android:text="Safe↑"
+                                    android:textStyle="bold"
+                                    android:padding="6dp"
+                                    android:gravity="center"
+                                    android:textSize="11sp"/>
+                                <TextView
+                                    android:text="Score"
+                                    android:textStyle="bold"
+                                    android:padding="6dp"
+                                    android:gravity="center"
+                                    android:textSize="11sp"/>
+                            </TableRow>
+
+                        </TableLayout>
+
+                        <!-- Legend -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:padding="8dp"
+                            android:gravity="center">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="↑ Higher is better"
+                                android:textSize="10sp"
+                                android:textColor="#757575"
+                                android:layout_marginEnd="16dp"/>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="🏆 = Best"
+                                android:textSize="10sp"
+                                android:textColor="#757575"/>
 
                         </LinearLayout>
 

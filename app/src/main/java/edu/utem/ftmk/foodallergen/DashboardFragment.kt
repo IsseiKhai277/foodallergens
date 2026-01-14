@@ -9,9 +9,14 @@ import android.widget.ArrayAdapter
 import android.widget.Spinner
 import android.widget.TextView
 import android.widget.AdapterView
+import android.widget.TableLayout
+import android.widget.TableRow
+import android.graphics.Typeface
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.card.MaterialCardView
 import kotlinx.coroutines.launch
 
 /**
@@ -69,6 +74,9 @@ class DashboardFragment : Fragment() {
     private lateinit var tvTTFT: TextView
     private lateinit var tvITPS: TextView
     private lateinit var tvOTPS: TextView
+    private lateinit var tvOET: TextView
+    private lateinit var tvJavaHeap: TextView
+    private lateinit var tvNativeHeap: TextView
     private lateinit var tvMemory: TextView
 
     // Confusion Matrix
@@ -77,9 +85,28 @@ class DashboardFragment : Fragment() {
     private lateinit var tvFN: TextView
     private lateinit var tvTN: TextView
 
+    // Model Comparison
+    private lateinit var cardModelComparison: MaterialCardView
+    private lateinit var tvRecommendedModel: TextView
+    private lateinit var tvRecommendationReason: TextView
+    private lateinit var tableModelComparison: TableLayout
+
     private var dataByModel: Map<String, List<FoodData>> = emptyMap()
     private var currentModel: String = "All Models"
     private var isDataLoaded: Boolean = false
+
+    /**
+     * Data class to hold model comparison metrics
+     */
+    data class ModelScore(
+        val modelName: String,
+        val shortName: String,
+        val microF1: Double,
+        val recall: Double,
+        val safetyScore: Double,  // 100 - hallucinationRate
+        val overallScore: Double,
+        val sampleCount: Int
+    )
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -121,6 +148,9 @@ class DashboardFragment : Fragment() {
         tvTTFT = view.findViewById(R.id.tvTTFT)
         tvITPS = view.findViewById(R.id.tvITPS)
         tvOTPS = view.findViewById(R.id.tvOTPS)
+        tvOET = view.findViewById(R.id.tvOET)
+        tvJavaHeap = view.findViewById(R.id.tvJavaHeap)
+        tvNativeHeap = view.findViewById(R.id.tvNativeHeap)
         tvMemory = view.findViewById(R.id.tvMemory)
 
         // Confusion matrix
@@ -128,6 +158,12 @@ class DashboardFragment : Fragment() {
         tvFP = view.findViewById(R.id.tvFP)
         tvFN = view.findViewById(R.id.tvFN)
         tvTN = view.findViewById(R.id.tvTN)
+
+        // Model comparison
+        cardModelComparison = view.findViewById(R.id.cardModelComparison)
+        tvRecommendedModel = view.findViewById(R.id.tvRecommendedModel)
+        tvRecommendationReason = view.findViewById(R.id.tvRecommendationReason)
+        tableModelComparison = view.findViewById(R.id.tableModelComparison)
     }
 
     private fun setupListeners() {
@@ -229,6 +265,9 @@ class DashboardFragment : Fragment() {
                 isDataLoaded = true
                 btnExport.isEnabled = true
                 updateMetricsDisplay()
+                
+                // Update model comparison table
+                updateModelComparison()
 
             } catch (e: Exception) {
                 Log.e("DashboardFragment", "Error loading dashboard", e)
@@ -290,6 +329,9 @@ class DashboardFragment : Fragment() {
         tvTTFT.text = "--"
         tvITPS.text = "--"
         tvOTPS.text = "--"
+        tvOET.text = "--"
+        tvJavaHeap.text = "--"
+        tvNativeHeap.text = "--"
         tvMemory.text = "--"
         tvTP.text = "0"
         tvFP.text = "0"
@@ -310,6 +352,9 @@ class DashboardFragment : Fragment() {
         var sumTTFT = 0L
         var sumITPS = 0L
         var sumOTPS = 0L
+        var sumOET = 0L
+        var sumJavaHeap = 0L
+        var sumNativeHeap = 0L
         var sumMemory = 0L
 
         // For F1 Macro calculation - track per-allergen counts
@@ -338,6 +383,9 @@ class DashboardFragment : Fragment() {
                 sumTTFT += m.ttft
                 sumITPS += m.itps
                 sumOTPS += m.otps
+                sumOET += m.oet
+                sumJavaHeap += m.javaHeapKb
+                sumNativeHeap += m.nativeHeapKb
                 sumMemory += m.totalPssKb
             }
 
@@ -406,6 +454,9 @@ class DashboardFragment : Fragment() {
         val avgTTFT = if (n > 0) sumTTFT / n else 0L
         val avgITPS = if (n > 0) sumITPS / n else 0L
         val avgOTPS = if (n > 0) sumOTPS / n else 0L
+        val avgOET = if (n > 0) sumOET / n else 0L
+        val avgJavaHeap = if (n > 0) sumJavaHeap / n else 0L
+        val avgNativeHeap = if (n > 0) sumNativeHeap / n else 0L
         val avgMemory = if (n > 0) sumMemory / n else 0L
 
         // Update UI
@@ -430,6 +481,9 @@ class DashboardFragment : Fragment() {
         tvTTFT.text = String.format("%d ms", avgTTFT)
         tvITPS.text = String.format("%d tok/s", avgITPS)
         tvOTPS.text = String.format("%d tok/s", avgOTPS)
+        tvOET.text = String.format("%d ms", avgOET)
+        tvJavaHeap.text = String.format("%d KB", avgJavaHeap)
+        tvNativeHeap.text = String.format("%d KB", avgNativeHeap)
         tvMemory.text = String.format("%d KB", avgMemory)
 
         // Confusion matrix
@@ -547,6 +601,240 @@ class DashboardFragment : Fragment() {
             } finally {
                 btnExport.isEnabled = true
             }
+        }
+    }
+
+    /**
+     * Updates the model comparison table with metrics from all models
+     */
+    private fun updateModelComparison() {
+        if (dataByModel.isEmpty()) {
+            // Need at least 1 model to show ranking
+            cardModelComparison.visibility = View.GONE
+            return
+        }
+        
+        cardModelComparison.visibility = View.VISIBLE
+        
+        // Calculate metrics for each model
+        val modelScores = mutableListOf<ModelScore>()
+        
+        dataByModel.forEach { (modelName, foodList) ->
+            if (foodList.isNotEmpty()) {
+                val score = calculateModelScore(modelName, foodList)
+                modelScores.add(score)
+            }
+        }
+        
+        if (modelScores.isEmpty()) {
+            cardModelComparison.visibility = View.GONE
+            return
+        }
+        
+        // Sort by overall score (highest first)
+        modelScores.sortByDescending { it.overallScore }
+        
+        // Update recommended model
+        val bestModel = modelScores.first()
+        tvRecommendedModel.text = "🏆 ${bestModel.shortName}"
+        
+        // Generate recommendation reason
+        val reason = buildRecommendationReason(bestModel, modelScores)
+        tvRecommendationReason.text = reason
+        
+        // Update comparison table
+        updateComparisonTable(modelScores)
+    }
+
+    /**
+     * Calculate comprehensive score for a model
+     */
+    private fun calculateModelScore(modelName: String, foodList: List<FoodData>): ModelScore {
+        var totalTP = 0
+        var totalFP = 0
+        var totalFN = 0
+        var hallucinationCount = 0
+        
+        val perAllergenCounts = allAllergens.associateWith {
+            mutableMapOf("tp" to 0, "fp" to 0, "fn" to 0, "tn" to 0)
+        }.toMutableMap()
+        
+        foodList.forEach { food ->
+            food.qualityMetrics?.let { qm ->
+                totalTP += qm.truePositives
+                totalFP += qm.falsePositives
+                totalFN += qm.falseNegatives
+            }
+            
+            val predSet = normalizeAllergenString(food.predictedAllergens)
+            val truthSet = normalizeAllergenString(food.allergensMapped)
+            
+            allAllergens.forEach { allergen ->
+                val inPred = allergen in predSet
+                val inTruth = allergen in truthSet
+                when {
+                    inPred && inTruth -> perAllergenCounts[allergen]!!["tp"] = perAllergenCounts[allergen]!!["tp"]!! + 1
+                    inPred && !inTruth -> perAllergenCounts[allergen]!!["fp"] = perAllergenCounts[allergen]!!["fp"]!! + 1
+                    !inPred && inTruth -> perAllergenCounts[allergen]!!["fn"] = perAllergenCounts[allergen]!!["fn"]!! + 1
+                    else -> perAllergenCounts[allergen]!!["tn"] = perAllergenCounts[allergen]!!["tn"]!! + 1
+                }
+            }
+            
+            if (hasHallucination(food.predictedAllergens, food.ingredients)) {
+                hallucinationCount++
+            }
+        }
+        
+        val n = foodList.size
+        
+        // Calculate metrics
+        val microF1 = if (2 * totalTP + totalFP + totalFN > 0) {
+            (2.0 * totalTP) / (2.0 * totalTP + totalFP + totalFN)
+        } else 0.0
+        
+        val recall = if (totalTP + totalFN > 0) {
+            totalTP.toDouble() / (totalTP + totalFN)
+        } else 0.0
+        
+        val hallucinationRate = if (n > 0) (hallucinationCount.toDouble() / n) * 100.0 else 0.0
+        val safetyScore = 100.0 - hallucinationRate
+        
+        // Overall score: Weighted combination
+        // - Recall (40%): Critical for allergen safety - must not miss allergens
+        // - Micro F1 (35%): Overall prediction quality
+        // - Safety (25%): Avoid hallucinations
+        val overallScore = (recall * 40) + (microF1 * 35) + (safetyScore / 100.0 * 25)
+        
+        val shortName = modelName.substringBefore("-Q").substringBefore(".gguf")
+        
+        return ModelScore(
+            modelName = modelName,
+            shortName = shortName,
+            microF1 = microF1,
+            recall = recall,
+            safetyScore = safetyScore,
+            overallScore = overallScore,
+            sampleCount = n
+        )
+    }
+
+    /**
+     * Build recommendation reason text
+     */
+    private fun buildRecommendationReason(best: ModelScore, all: List<ModelScore>): String {
+        // If only one model, show its metrics
+        if (all.size == 1) {
+            return "✓ Recall: ${String.format("%.1f%%", best.recall * 100)} | F1: ${String.format("%.1f%%", best.microF1 * 100)} | Score: ${String.format("%.1f", best.overallScore)}/100"
+        }
+        
+        val reasons = mutableListOf<String>()
+        
+        // Check if best in each category
+        val bestF1 = all.maxByOrNull { it.microF1 }
+        val bestRecall = all.maxByOrNull { it.recall }
+        val bestSafety = all.maxByOrNull { it.safetyScore }
+        
+        if (best == bestRecall) {
+            reasons.add("highest recall (${String.format("%.1f%%", best.recall * 100)})")
+        }
+        if (best == bestF1) {
+            reasons.add("best F1 score (${String.format("%.1f%%", best.microF1 * 100)})")
+        }
+        if (best == bestSafety) {
+            reasons.add("lowest hallucination rate")
+        }
+        
+        return if (reasons.isNotEmpty()) {
+            "✓ ${reasons.joinToString(", ")} | Score: ${String.format("%.1f", best.overallScore)}/100"
+        } else {
+            "✓ Best overall balance across metrics | Score: ${String.format("%.1f", best.overallScore)}/100"
+        }
+    }
+
+    /**
+     * Update the comparison table with model data - showing all models with their rank
+     */
+    private fun updateComparisonTable(scores: List<ModelScore>) {
+        // Remove all rows except header (index 0)
+        while (tableModelComparison.childCount > 1) {
+            tableModelComparison.removeViewAt(1)
+        }
+        
+        val context = requireContext()
+        val bestScore = scores.firstOrNull()
+        
+        // Add all models with their rank
+        scores.forEachIndexed { index, score ->
+            val rank = index + 1 // 1-based ranking
+            val row = TableRow(context).apply {
+                if (index % 2 == 0) {
+                    setBackgroundColor(ContextCompat.getColor(context, android.R.color.white))
+                } else {
+                    setBackgroundColor(0xFFF5F5F5.toInt())
+                }
+                setPadding(4, 8, 4, 8)
+            }
+            
+            // Rank column with medal emoji for top 3
+            val rankText = when (rank) {
+                1 -> "🥇"
+                2 -> "🥈"
+                3 -> "🥉"
+                else -> "#$rank"
+            }
+            row.addView(createTableCell(context, rankText, Typeface.BOLD, 10f, true))
+            
+            // Model name column
+            val isBest = score == bestScore
+            row.addView(createTableCell(context, score.shortName, 
+                if (isBest) Typeface.BOLD else Typeface.NORMAL, 
+                10f))
+            
+            // F1 column
+            val f1Text = String.format("%.1f%%", score.microF1 * 100)
+            row.addView(createTableCell(context, f1Text, Typeface.NORMAL, 10f, true))
+            
+            // Recall column
+            val recallText = String.format("%.1f%%", score.recall * 100)
+            row.addView(createTableCell(context, recallText, Typeface.NORMAL, 10f, true))
+            
+            // Safety column
+            val safetyText = String.format("%.0f%%", score.safetyScore)
+            row.addView(createTableCell(context, safetyText, Typeface.NORMAL, 10f, true))
+            
+            // Overall score column
+            val scoreText = String.format("%.1f", score.overallScore)
+            val scoreColor = when {
+                score.overallScore >= 70 -> 0xFF2E7D32.toInt() // Green
+                score.overallScore >= 50 -> 0xFFFF9800.toInt() // Orange
+                else -> 0xFFC62828.toInt() // Red
+            }
+            row.addView(createTableCell(context, scoreText, Typeface.BOLD, 10f, true, scoreColor))
+            
+            tableModelComparison.addView(row)
+        }
+    }
+
+    /**
+     * Helper to create table cells
+     */
+    private fun createTableCell(
+        context: android.content.Context, 
+        text: String, 
+        typeface: Int = Typeface.NORMAL,
+        textSize: Float = 12f,
+        center: Boolean = false,
+        textColor: Int? = null
+    ): TextView {
+        return TextView(context).apply {
+            this.text = text
+            this.setTypeface(null, typeface)
+            this.textSize = textSize
+            this.setPadding(6, 6, 6, 6)
+            if (center) {
+                this.gravity = android.view.Gravity.CENTER
+            }
+            textColor?.let { this.setTextColor(it) }
         }
     }
 }

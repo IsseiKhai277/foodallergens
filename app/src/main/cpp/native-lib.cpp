@@ -194,6 +194,9 @@ std::string runModel(const std::string& prompt, const std::string& model_path) {
         llama_token token = llama_sampler_sample(sampler, ctx, -1);
 
         if (llama_vocab_is_eog(vocab, token)) {
+            __android_log_print(ANDROID_LOG_INFO, LOG_TAG,
+                                "EOG token detected at position %d (generated %d tokens)", 
+                                n_pos, generated_tokens);
             break;
         }
 
@@ -240,6 +243,9 @@ std::string runModel(const std::string& prompt, const std::string& model_path) {
 
     oet_ms = gen_ms;
 
+    __android_log_print(ANDROID_LOG_INFO, LOG_TAG,
+                        "Generation complete: %d tokens in %ld ms (OTPS=%ld)", 
+                        generated_tokens, gen_ms, otps);
     __android_log_print(ANDROID_LOG_INFO, LOG_TAG,
                         "Raw model output: %s", output.c_str());
 

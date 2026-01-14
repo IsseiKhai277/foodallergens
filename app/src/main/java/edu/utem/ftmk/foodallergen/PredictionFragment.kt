@@ -280,6 +280,27 @@ class PredictionFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             if (!isAdded || context == null) return@launch
             
+            // Check if model is available
+            val ctx = context
+            if (ctx == null) {
+                Log.e("PredictionFragment", "Context is null, cannot predict")
+                return@launch
+            }
+
+            val modelFile = File(ctx.filesDir, selectedModel)
+            if (!modelFile.exists()) {
+                Log.e("PredictionFragment", "Model file not found: ${modelFile.absolutePath}")
+                if (isAdded) {
+                    Toast.makeText(
+                        ctx,
+                        "❌ Model not detected: $selectedModel\nPlease ensure the model file is available.",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    tvProgress.text = "Model not found"
+                }
+                return@launch
+            }
+
             isPredicting = true
             btnPredictAll.isEnabled = false
             btnLoadDataSet.isEnabled = false
